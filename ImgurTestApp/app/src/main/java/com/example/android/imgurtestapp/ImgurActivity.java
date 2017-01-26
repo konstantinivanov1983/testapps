@@ -22,11 +22,11 @@ public class ImgurActivity extends AppCompatActivity implements LoaderManager.Lo
 
     private static final String AUTHORIZATION_URL = "https://api.imgur.com/oauth2/authorize";
     private static final String CLIENT_ID = "5b5f6b057860d86";
-    private static final String QUERY = "https://api.imgur.com/3/account/me/images";
+    private static final String QUERY = "https://api.imgur.com/3/account/me/images";  // ЕСЛИ ПЕРЕМЕННАЯ ОБОЗНАЧАЕТСЯ КАПСОМ И ОНА final ТО ДЕЛАЙ ЕЕ public
     public static final String LOG_TAG = ImgurActivity.class.getName();
     private String accessToken;
     private String refreshToken;
-    private static ArrayList<ImgurImage> imgurImages;
+    private static ArrayList<ImgurImage> imgurImages;   // ЗАЧЕМ СТАТИЧЕСКАЯ ПЕРЕМЕННАЯ ??? ИЗБАВСЯ ОТ НЕЕ
     private FragmentPagerAdapter adapterViewPager;
 
 
@@ -34,6 +34,12 @@ public class ImgurActivity extends AppCompatActivity implements LoaderManager.Lo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_imgur);
+
+
+        // ПОНИМАЮ ЧТО В ЦЕЛОМ НИЖЕСЛЕДУЮЩИЙ КОД РАБОТАЕТ, НО ОН ДОВОЛНО СТРАННЫЙ, ЛУЧШЕ
+        // СДЕЛАТЬ НЕ ЧЕРЕЗ ИНТЕНТЫ, А ЧЕРЕЗ ФРАГМЕНТЫ, В onCreate ПРОВЕРЯЕШЬ ЧТО ПОЛЬЗОВАТЕЛЬ
+        // НЕ АВТОРИЗОВАН И ПОКАЖЕШЬ ФРАГМЕНТ С webview, ПОСЛЕ АВТОРИЗАЦИИ
+        // ЕГО УДАЛЯЕШЬ И ЗАПУСКАЕШЬ КОНТЕНТ В viewpager
 
         String action = getIntent().getAction(); // return the intent that started this activity + return action
 
@@ -73,8 +79,11 @@ public class ImgurActivity extends AppCompatActivity implements LoaderManager.Lo
         }
     }
 
+    // Я БЫ СОВЕТОВАЛ АДАПТЕРЫ В ОТДЕЛЬНЫХ КЛАССАХ СОЗДАВАТЬ И В ОТДЕЛЬНОЙ ПАПКЕ, НЕ ПИХАЙ ВСЕ
+    // В Activity
     public static class MyPagerAdapter extends FragmentPagerAdapter{
-        private static int NUM_ITEMS = imgurImages.size();
+        private static int NUM_ITEMS = imgurImages.size(); //ПЛОХО ОПЯТЬ СТАТИКА, ПЕРЕДАВАЙ
+        // КОЛИЧЕСТВО ФОТОК И САМИ ФОТКИ В КОНСТРУКТОРЕ MyPagerAdapter !!!
 
         public MyPagerAdapter(FragmentManager fragmentManager) {
             super(fragmentManager);
@@ -102,7 +111,16 @@ public class ImgurActivity extends AppCompatActivity implements LoaderManager.Lo
     public void onLoadFinished(Loader<ArrayList<ImgurImage>> loader, ArrayList<ImgurImage> data) {
         if (data != null && !data.isEmpty()) {
             imgurImages = data;
-            ViewPager vPager = (ViewPager) findViewById(R.id.vpPager);
+            ViewPager vPager = (ViewPager) findViewById(R.id.vpPager); // vPager я бы еще
+            // в onCreate создал бы и держал как публичную переменную,
+            // потом в onDestroy ее можно обнулить
+
+
+            //Так не правильно делать, потому что onLoadFinished может вызыватся сколько угодно
+            // раз, и что же каждый раз ты создаешь новый адаптер и его присваиваешь,
+            // в итоге насоздали 100 адаптеров, они висят в памяти, плохо это,
+            // адаптер должен быть один и если пришли новые данные то ты находишь его
+            // и обновляешь данные по своему усмотрению
             adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
             vPager.setAdapter(adapterViewPager);
         }
@@ -116,6 +134,7 @@ public class ImgurActivity extends AppCompatActivity implements LoaderManager.Lo
 
     }
 
+    // так же бы вынес лоадер в отдельный класс и package, ты можешь в будущем еще где его использовать
     private static class ImgurLoader extends AsyncTaskLoader<ArrayList<ImgurImage>> {
         private String queryUrl;
         private String aToken;

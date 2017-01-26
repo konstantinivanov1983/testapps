@@ -11,11 +11,14 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import java.util.Locale;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class ImgurFragment extends Fragment {
 
+    // НЕЙМИНГ ПЕРЕМЕННЫХ НЕ ВЕРЕН, ИЗУЧАТЬ ЗДЕСЬ: https://github.com/ribot/android-guidelines/blob/master/project_and_code_guidelines.md
     private String image_title;
     private int image_number;
     private String image_url;
@@ -53,7 +56,11 @@ public class ImgurFragment extends Fragment {
         ImageView imageView = (ImageView) view.findViewById(R.id.image_pic);
         Glide.with(this).load(image_url).into(imageView);
         TextView numberView = (TextView) view.findViewById(R.id.image_number);
-        numberView.setText(String.valueOf(image_number+1 + " / " + arr_size));
+
+        //numberView.setText(String.valueOf(image_number+1 + " / " + arr_size));
+        //Удобнее и правильнее сделать вот так :
+
+        numberView.setText(String.format(Locale.ENGLISH, " %d / %d", image_number + 1, arr_size));
         return view;
     }
 }

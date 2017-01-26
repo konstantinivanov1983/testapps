@@ -23,7 +23,8 @@ import static com.example.android.imgurtestapp.ImgurActivity.LOG_TAG;
 
 public class QueryUtils {
 
-    private QueryUtils() {}
+    private QueryUtils() {}  //если в классе все методы статические, конструктор не нужен,
+    // создавать объект точно не надо никогда
 
     public static ArrayList<ImgurImage> fetchImages(String query, String accessToken) {
         URL url = createUrl(query);
@@ -109,7 +110,7 @@ public class QueryUtils {
 
         return resultArray;
     }
-
+    
     public static Bitmap imageFromUrl(String url) {
         Bitmap image = null;
 
